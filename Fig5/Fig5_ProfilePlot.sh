@@ -1,10 +1,10 @@
 #!/bin/bash 
 #SBATCH -t 00:30:00
-#SBATCH --job-name=Fig4
+#SBATCH --job-name=Fig5
 #SBATCH -c 16
 #SBATCH --mem=119g
-#SBATCH --output=Fig4.out
-#SBATCH --error=Fig4.err
+#SBATCH --output=Fig5.out
+#SBATCH --error=Fig5.err
 #SBATCH --mail-type=BEGIN,END,FAIL
 #SBATCH --mail-user=ahk42@pitt.edu
 module purge
@@ -127,17 +127,44 @@ computeMatrix reference-point --referencePoint center -b 2000 -a 2000 \
     -S "${BIGWIG_FILES[@]}" \
     -R "$PEAKS_DIR/sox2_vsx2_9k_shared.bed" "$PEAKS_DIR/sox2_unique.bed" "$PEAKS_DIR/vsx2_9k_unique.bed" \
     --binSize $WINDOW_SIZE \
-    -o "Fig4_tornado_matrix.gz" \
+    -o "Fig5_tornado_matrix.gz" \
     --sortRegions descend \
     --sortUsing mean \
     --missingDataAsZero \
     --verbose -p max --skipZeros --smartLabels
 
-plotHeatmap -m Fig4_tornado_matrix.gz -out SOX2_VSX2_Tornado.png \
+plotHeatmap -m Fig5_tornado_matrix.gz -out SOX2_VSX2_Tornado.png \
     --colorMap 'Blues' \
     --verbose \
     -T "SOX2 VSX2 Tornado" \
     --regionsLabel "Shared (1078)" "Sox2 Only (2423)" "Vsx2 Only (8028)" \
+    -x "" \
+    --averageTypeSummaryPlot mean \
+    --dpi 600 --legendLocation none
+
+
+# USED ALL PLUTO BAMS FOR THIS (ATAC-Seq is from pluto, so need to match chr names)
+
+ATAC_BIGWIG_DIR="/bgfs/ialdiri/Pluto_Sox2/bamCovBW/ATAC"
+SOX2_BIGWIG_DIR="/bgfs/ialdiri/Pluto_Sox2/bamCovBW/SOX2"
+VSX2_BIGWIG_DIR="/bgfs/ialdiri/Pluto_Sox2/bamCovBW/VSX2"
+
+BIGWIG_FILES=("$SOX2_BIGWIG_DIR/sample_SOX2_S1_R1.bigWig" "$VSX2_BIGWIG_DIR/VSX2_sample3_.bigWig" "$ATAC_BIGWIG_DIR/S2_WT_REP1.bigWig" "$ATAC_BIGWIG_DIR/S6_KO_REP1.bigWig")
+computeMatrix reference-point --referencePoint center -b 2000 -a 2000 \
+    -S "${BIGWIG_FILES[@]}" \
+    -R "$PEAKS_DIR/vsx2-sox2_vs_DARs.bed" \
+    --binSize $WINDOW_SIZE \
+    -o "Fig5_shared_vs_DAR.gz" \
+    --sortRegions descend \
+    --sortUsing mean \
+    --missingDataAsZero \
+    --verbose -p max --skipZeros --smartLabels
+
+plotHeatmap -m Fig5_shared_vs_DAR.gz -out Fig5_shared_vs_DAR.png \
+    --colorMap 'Blues' \
+    --verbose \
+    -T "SOX2 VSX2 Shared Peaks vs DAR" \
+    --regionsLabel "SOX2 VSX2 Shared Peaks vs DAR (483)" \
     -x "" \
     --averageTypeSummaryPlot mean \
     --dpi 600 --legendLocation none
