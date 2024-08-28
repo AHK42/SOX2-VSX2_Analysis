@@ -12,7 +12,7 @@ module load python/anaconda3.10-2022.10
 source activate deeptools
 
 
-# Define constant paths 
+# Define constants  
 BLACKLIST="/bgfs/ialdiri/Genomes/mm10-blacklist.v2.liftover.mm39.bed" # mm39
 CHROM_SIZE="2650000000"
 WINDOW_SIZE=10
@@ -25,7 +25,7 @@ BAM_FILES=("E14.5_REP1.mLb.clN.sorted.bam" "P7_REP1.mLb.clN.sorted.bam" "P21_REP
 
 mkdir -p $STAGES_BIGWIG_DIR
 
-# Loop over BAM files to generate bigWig files
+# Generate bigWig Files
 
 for BAM in "${BAM_FILES[@]}"; do
     SAMPLE_NAME=$(basename "$BAM" | awk -F".mLb" '{print $1}')
@@ -41,8 +41,6 @@ for BAM in "${BAM_FILES[@]}"; do
         --verbose 
 done
 
-# Define BW Files
-
 BIGWIG_FILES=("$STAGES_BIGWIG_DIR/E14.5_REP1.bigWig" "$STAGES_BIGWIG_DIR/P7_REP1.bigWig" "$STAGES_BIGWIG_DIR/P21_REP1.bigWig")
 PEAKS_DIR="/bgfs/ialdiri/Sox2_ATAC/Peaks"
 
@@ -56,11 +54,11 @@ computeMatrix reference-point --referencePoint center -b 2000 -a 2000 \
     --missingDataAsZero \
     --verbose -p max --skipZeros --smartLabels
 
-# Plot median instead of mean
-
-plotProfile -m profile_matrix.gz -out Sox2_ATAC_Stages_profilePlot_mediam.png \
+# Plot median instead of mean 
+plotProfile -m profile_matrix.gz -out Sox2_ATAC_Stages_profilePlot_median.png \
     --verbose \
     -T "Sox2 ATAC Stages" \
     --dpi 600 \
     --perGroup \
-    --averageType mediam
+    -z "3412 Peaks" \
+    --averageType median
