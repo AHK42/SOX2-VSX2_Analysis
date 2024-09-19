@@ -10,12 +10,12 @@ module load gcc/8.2.0
 module load python/anaconda3.10-2022.10
 source activate deeptools
 
-# Define constants 
-BLACKLIST="/bgfs/ialdiri/Genomes/mm10-blacklist.v2.bed.gz" # Pluto mm10
+# Define constants/paths
+BLACKLIST="/bgfs/ialdiri/Genomes/mm10-blacklist.v2.bed.gz" #! mm10
 CHROM_SIZE="2650000000"
 WINDOW_SIZE=10
 
-# Define Paths
+# SOX2 Paths
 SOX2_BAM_DIR="/bgfs/ialdiri/Pluto_Sox2/Bam"
 SOX2_BIGWIG_DIR="/bgfs/ialdiri/Pluto_Sox2/bamCovBW"
 SOX2_BAM_FILES=("sample_SOX2_S1_R1.target.dedup.sorted.bam")
@@ -37,15 +37,15 @@ for BAM in "${SOX2_BAM_FILES[@]}"; do
        --verbose \
        --extendReads  # Specific to C&R
 done
+
 # Define Paths 
 ATAC_BIGWIG_DIR="/bgfs/ialdiri/Pluto_Sox2/bamCovBW"
-PEAKS_DIR="/bgfs/ialdiri/Pluto_Sox2/Peaks"
+PEAKS_DIR="/bgfs/ialdiri/Pluto_Sox2/Peaks" #! CHANGE?
 
 # Define BW File Paths
 BIGWIG_FILES=("$SOX2_BIGWIG_DIR/sample_SOX2_S1_R1.bigWig" "$ATAC_BIGWIG_DIR/S2_WT_REP1.bigWig" "$ATAC_BIGWIG_DIR/S6_KO_REP1.bigWig")
 
-# Change reference to center
-
+# Generate matrix and plots
 computeMatrix reference-point --referencePoint center -b 2000 -a 2000 \
     -S "${BIGWIG_FILES[@]}" \
     -R  $PEAKS_DIR/CR_DARs_sig_decreased_peaks_overlap.bed  \

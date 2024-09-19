@@ -39,8 +39,9 @@ for BAM in "${BAM_FILES[@]}"; do
 done
 
 BIGWIG_FILES=("$ATAC_BIGWIG_DIR/S2_WT_REP1.bigWig" "$ATAC_BIGWIG_DIR/S6_KO_REP1.bigWig")
-PEAKS_DIR="/bgfs/ialdiri/Pluto_Sox2/Peaks"
+PEAKS_DIR="/bgfs/ialdiri/Pluto_Sox2/Peaks" 
 
+# DAR matricies/plots
 ############### Decreased ###############
 computeMatrix reference-point --referencePoint center -b 2000 -a 2000 \
     -S "${BIGWIG_FILES[@]}" \

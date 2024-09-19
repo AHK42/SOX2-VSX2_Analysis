@@ -12,19 +12,18 @@ module load python/anaconda3.10-2022.10
 source activate deeptools
 
 # Define constant paths 
-BLACKLIST="/bgfs/ialdiri/Genomes/mm10-blacklist.v2.liftover.mm39.bed"
+BLACKLIST="/bgfs/ialdiri/Genomes/mm10-blacklist.v2.bed.gz"
 CHROM_SIZE="2650000000"
 WINDOW_SIZE=10
 
 # Define Paths for Sox2CR
-SOX2_BAM_DIR="/bgfs/ialdiri/CR/Sox2CR/results/02_alignment/bowtie2/target/dedup"
-SOX2_BIGWIG_DIR="/bgfs/ialdiri/CR/Sox2CR/bamCovBW"
+SOX2_BAM_DIR="/bgfs/ialdiri/CR-ChIP/Sox2CR/results/02_alignment/bowtie2/target/dedup"
+SOX2_BIGWIG_DIR="/bgfs/ialdiri/CR-ChIP/Sox2CR/bamCovBW"
 SOX2_BAM_FILES=("SOX2_S1_R1.target.dedup.sorted.bam" "SOX2_S3_R1.target.dedup.sorted.bam")
 
 mkdir -p $SOX2_BIGWIG_DIR
 
 # Loop over BAM files to generate bigWig files
-
 for BAM in "${SOX2_BAM_FILES[@]}"; do
    SAMPLE_NAME=$(basename "$BAM" | cut -d. -f1)
    bamCoverage \
@@ -48,7 +47,6 @@ BAM_FILES=("WT1_REP1.mLb.clN.sorted.bam" "WT2_REP1.mLb.clN.sorted.bam" "KO1_REP1
 mkdir -p $ATAC_BIGWIG_DIR
 
 # Generate bigWig Files
-
 for BAM in "${BAM_FILES[@]}"; do
     SAMPLE_NAME=$(basename "$BAM" | cut -d. -f1)
     bamCoverage \
@@ -66,22 +64,24 @@ done
 BIGWIG_FILES=("$SOX2_BIGWIG_DIR/SOX2_S1_R1.bigWig" "$ATAC_BIGWIG_DIR/WT1_REP1.bigWig")
 PEAKS_DIR="/bgfs/ialdiri/Sox2_ATAC"
 
+# Generate Matrix and plots
+
 computeMatrix reference-point --referencePoint center -b 2000 -a 2000 \
     -S "${BIGWIG_FILES[@]}" \
-    -R  "$PEAKS_DIR/Sox2CR_Sox2WTATAC_int.bed"  \
+    -R  "$PEAKS_DIR/Sox2CR_Sox2WTATAC_int.bed"  \ 
     --binSize $WINDOW_SIZE \
-    -o "matrix.gz" \
+    -o "SOXCR_WTATAC_matrix.gz" \
     --sortRegions descend \
     --sortUsing mean \
     --missingDataAsZero \
     --verbose -p max --skipZeros --smartLabels
 
-plotHeatmap -m matrix.gz -out Sox2CR_Sox2WTATAC.png \
+plotHeatmap -m SOXCR_WTATAC_matrix.gz -out Sox2CR_Sox2WTATAC.png \
     --colorMap 'Blues' \
     --verbose \
     -T "Sox2 CR vs WT ATAC" \
     --averageTypeSummaryPlot mean \
     --zMax 25 160 \
     -x "" \
-    -z "3461 Peaks"\
+    -z "Peaks"\
     --dpi 600 \
