@@ -65,3 +65,28 @@ plotHeatmap -m Decreased_CR_matrix.gz -out Sox2_CR_WTKO_ATAC_Decreased.png \
     --zMax 25 160 160 \
     --averageTypeSummaryPlot mean \
     --dpi 600 --legendLocation none
+
+$SOX2_BIGWIG_DIR="/bgfs/ialdiri/CR-ChIP/SOX2"
+PEAKS_DIR="/bgfs/ialdiri/CR-ChIP/Peaks" #! CHANGE?
+
+BIGWIG_FILES=("$SOX2_BIGWIG_DIR/SOX2_S1_R1.bigWig" "$SOX2_BIGWIG_DIR/SOX2_S3_R1.bigWig")
+
+
+computeMatrix reference-point --referencePoint center -b 2000 -a 2000 \
+    -S "${BIGWIG_FILES[@]}" \
+    -R  $PEAKS_DIR/sox2_consensus.bed  \
+    --binSize $WINDOW_SIZE \
+    -o "Sox2.gz" \
+    --sortRegions descend \
+    --sortUsing mean \
+    --missingDataAsZero \
+    --verbose -p max --skipZeros --smartLabels
+
+plotHeatmap -m Sox2.gz -out Sox2.png \
+    --colorMap 'Blues' \
+    --verbose \
+    -T "" \
+    -z "3489 peaks" \
+    -x "" \
+    --averageTypeSummaryPlot mean \
+    --dpi 600 --legendLocation none

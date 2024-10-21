@@ -23,21 +23,21 @@ SOX2_BAM_FILES=("SOX2_S1_R1.target.dedup.sorted.bam" "SOX2_S3_R1.target.dedup.so
 
 mkdir -p $SOX2_BIGWIG_DIR
 
-# Loop over BAM files to generate bigWig files
-for BAM in "${SOX2_BAM_FILES[@]}"; do
-   SAMPLE_NAME=$(basename "$BAM" | cut -d. -f1)
-   bamCoverage \
-       --bam "$SOX2_BAM_DIR/$BAM" \
-       --outFileName "$SOX2_BIGWIG_DIR/${SAMPLE_NAME}.bigWig" \
-       --binSize $WINDOW_SIZE \
-       --normalizeUsing RPGC \
-       --effectiveGenomeSize $CHROM_SIZE \
-       --ignoreForNormalization chrX \
-       --blackListFileName $BLACKLIST \
-       --numberOfProcessors max \
-       --verbose \
-       --extendReads  # Specific to C&R
-done
+# # Loop over BAM files to generate bigWig files
+# for BAM in "${SOX2_BAM_FILES[@]}"; do
+#    SAMPLE_NAME=$(basename "$BAM" | cut -d. -f1)
+#    bamCoverage \
+#        --bam "$SOX2_BAM_DIR/$BAM" \
+#        --outFileName "$SOX2_BIGWIG_DIR/${SAMPLE_NAME}.bigWig" \
+#        --binSize $WINDOW_SIZE \
+#        --normalizeUsing RPGC \
+#        --effectiveGenomeSize $CHROM_SIZE \
+#        --ignoreForNormalization chrX \
+#        --blackListFileName $BLACKLIST \
+#        --numberOfProcessors max \
+#        --verbose \
+#        --extendReads  # Specific to C&R
+# done
 
 # Define paths for SOX2 ATAC Seq (WT and KO)
 ATAC_BAM_DIR="/bgfs/ialdiri/ATAC-Seq/Sox2_ATAC-Seq/outDir/bowtie2/merged_library"
@@ -47,19 +47,19 @@ BAM_FILES=("WT1_REP1.mLb.clN.sorted.bam" "WT2_REP1.mLb.clN.sorted.bam" "KO1_REP1
 mkdir -p $ATAC_BIGWIG_DIR
 
 # Generate bigWig Files
-for BAM in "${BAM_FILES[@]}"; do
-    SAMPLE_NAME=$(basename "$BAM" | cut -d. -f1)
-    bamCoverage \
-        --bam "$ATAC_BAM_DIR/$BAM" \
-        --outFileName "$ATAC_BIGWIG_DIR/${SAMPLE_NAME}.bigWig" \
-        --binSize $WINDOW_SIZE \
-        --normalizeUsing RPGC \
-        --effectiveGenomeSize $CHROM_SIZE \
-        --ignoreForNormalization chrX \
-        --blackListFileName $BLACKLIST \
-        --numberOfProcessors max \
-        --verbose 
-done
+# for BAM in "${BAM_FILES[@]}"; do
+#     SAMPLE_NAME=$(basename "$BAM" | cut -d. -f1)
+#     bamCoverage \
+#         --bam "$ATAC_BAM_DIR/$BAM" \
+#         --outFileName "$ATAC_BIGWIG_DIR/${SAMPLE_NAME}.bigWig" \
+#         --binSize $WINDOW_SIZE \
+#         --normalizeUsing RPGC \
+#         --effectiveGenomeSize $CHROM_SIZE \
+#         --ignoreForNormalization chrX \
+#         --blackListFileName $BLACKLIST \
+#         --numberOfProcessors max \
+#         --verbose 
+# done
 
 BIGWIG_FILES=("$SOX2_BIGWIG_DIR/SOX2_S1_R1.bigWig" "$ATAC_BIGWIG_DIR/WT1_REP1.bigWig")
 PEAKS_DIR="/bgfs/ialdiri/Sox2_ATAC"
