@@ -1,12 +1,6 @@
-#!/bin/bash 
-#SBATCH -t 00:30:00
-#SBATCH --job-name=Fig5
-#SBATCH -c 16
-#SBATCH --mem=119g
-#SBATCH --output=Fig5.out
-#SBATCH --error=Fig5.err
-#SBATCH --mail-type=BEGIN,END,FAIL
-#SBATCH --mail-user=ahk42@pitt.edu
+#!/bin/bash
+
+# Load necessary modules
 module purge
 module load gcc/8.2.0
 module load python/anaconda3.10-2022.10
@@ -18,7 +12,6 @@ CHROM_SIZE="2650000000"
 WINDOW_SIZE=10
 
 # Define paths for SOX2 CR Files
-#! WHY IS PLUTO NOT WORKING?????????
 SOX2_BAM_DIR="/bgfs/ialdiri/CR-ChIP/Sox2CR/results/02_alignment/bowtie2/target/dedup"
 SOX2_BIGWIG_DIR="/bgfs/ialdiri/CR-ChIP/bamCovBW/SOX2"
 SOX2_BAM_FILES=("SOX2_S1_R1.target.dedup.sorted.bam" "SOX2_S3_R1.target.dedup.sorted.bam") 
@@ -33,6 +26,7 @@ mkdir -p $VSX2_BIGWIG_DIR
 
 # Generate bigWig files for each TF
 
+# SOX2
 for BAM in "${SOX2_BAM_FILES[@]}"; do
     SAMPLE_NAME=$(basename "$BAM" | basename "$BAM" | cut -d. -f1)
     bamCoverage \
@@ -48,6 +42,7 @@ for BAM in "${SOX2_BAM_FILES[@]}"; do
         --extendReads
 done
 
+# VSX2
 for BAM in "${VSX2_BAM_FILES[@]}"; do
     SAMPLE_NAME=$(basename "$BAM" | basename "$BAM" | cut -d. -f1)
     bamCoverage \
@@ -62,7 +57,7 @@ for BAM in "${VSX2_BAM_FILES[@]}"; do
         --verbose 
 done
 
-# Generate profilePlots for Sox2 Samples
+# Generate profilePlots for SOX2 
 
 BIGWIG_FILES=("$SOX2_BIGWIG_DIR/SOX2_S1_R1.bigWig" "$SOX2_BIGWIG_DIR/SOX2_S3_R1.bigWig")
 PEAKS_DIR="/bgfs/ialdiri/CR-ChIP/Peaks"
@@ -76,7 +71,7 @@ computeMatrix reference-point --referencePoint center -b 2000 -a 2000 \
     --missingDataAsZero \
     --verbose -p max --skipZeros --smartLabels
 
-# # SOX2 2 profile plots
+# Fig 5G
 plotProfile -m Sox2_Profile_matrix.gz \
     -out Sox2_Binding_profilePlot.png \
     --plotType lines \
@@ -90,8 +85,7 @@ plotProfile -m Sox2_Profile_matrix.gz \
     --yMax 20 \
     --regionsLabel "Shared (n = 1078)" "Sox2 Only (n = 2423)" "Vsx2 Only (n = 8028)"
 
-#---------- VSX2 ----------
-
+#=========== VSX2 ===========
 # Generate profilePlots for Vsx2 Samples
 
 VSX2_BIGWIG_FILES=("$VSX2_BIGWIG_DIR/Vsx2_Sample1.bigWig" "$VSX2_BIGWIG_DIR/Vsx2_Sample3.bigWig")
@@ -107,7 +101,7 @@ computeMatrix reference-point --referencePoint center -b 2000 -a 2000 \
     --missingDataAsZero \
     --verbose -p max --skipZeros --smartLabels
 
-# VSX2 profile plots
+# Fig 5F
 plotProfile -m Vsx2_Profile_matrix.gz \
     -out Vsx2_Binding_profilePlot.png \
     --plotType lines \
@@ -121,8 +115,7 @@ plotProfile -m Vsx2_Profile_matrix.gz \
     --yMax 20 \
     --regionsLabel "Shared (n = 1078)" "Sox2 Only (n = 2423)" "Vsx2 Only (n = 8028)"
 
-
-# Tornado Plot
+# Tornado Plot with both TFs
 
 BIGWIG_FILES=("$SOX2_BIGWIG_DIR/SOX2_S1_R1.bigWig" "$VSX2_BIGWIG_DIR/Vsx2_Sample3.bigWig")
 computeMatrix reference-point --referencePoint center -b 2000 -a 2000 \
@@ -135,6 +128,7 @@ computeMatrix reference-point --referencePoint center -b 2000 -a 2000 \
     --missingDataAsZero \
     --verbose -p max --skipZeros --smartLabels
 
+# Fig 5A
 plotHeatmap -m Fig5_tornado_matrix.gz -out SOX2_VSX2_Tornado.png \
     --colorMap 'Blues' \
     --verbose \

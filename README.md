@@ -9,9 +9,9 @@ This repository is broken down by the figures each script contributed to.
 - [`bedtools`](https://bedtools.readthedocs.io/en/latest/#) (v2.31.0)
 - [`HINT`](https://reg-gen.readthedocs.io/en/latest/hint/introduction.html) (v0.12.3)
 - [`deepTools`](https://deeptools.readthedocs.io/en/3.5.5/content/list_of_tools.html) (v3.5.5)
-- [`ggplot2`](https://ggplot2.tidyverse.org/) (v3.5.1)????
+- [`ggplot2`](https://ggplot2.tidyverse.org/) (v3.5.1)
 - [`HOMER`](http://homer.ucsd.edu/homer/) (v4.10.3)
-- [`DiffBind`](https://bioconductor.org/packages/release/bioc/html/DiffBind.html) (v)
+
 
 
 

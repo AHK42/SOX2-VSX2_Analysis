@@ -1,9 +1,7 @@
 Sox2_BulkRNA-Seq/
-Updates.md
-BedEditor/
-NewSample.csv
 ATAC-Seq/
 CR_Chip-Seq/
 Plots/
 Fig5/Peaks
 EChO/
+Fig2/Sox2_ATAC_DARs_Tornado.sh
