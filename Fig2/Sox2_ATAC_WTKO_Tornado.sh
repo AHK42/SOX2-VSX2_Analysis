@@ -7,8 +7,6 @@ module load python/anaconda3.10-2022.10
 source activate deeptools
 
 # Define constants/paths
-BLACKLIST="/bgfs/ialdiri/Genomes/mm10-blacklist.v2.bed.gz" 
-CHROM_SIZE="2650000000"
 WINDOW_SIZE=10
 
 # Define Paths (DAR analysis done by PLUTO)

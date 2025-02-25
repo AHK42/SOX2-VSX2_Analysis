@@ -14,7 +14,7 @@ WINDOW_SIZE=10
 # Define Paths for Sox2CR
 SOX2_BAM_DIR="/bgfs/ialdiri/CR-ChIP/nfcore_runs/Sox2CR/results/02_alignment/bowtie2/target/dedup"
 SOX2_BIGWIG_DIR="/bgfs/ialdiri/CR-ChIP/bamCovBW/SOX2"
-SOX2_BAM_FILES=("SOX2_S3_R1.target.dedup.sorted.bam")
+SOX2_BAM_FILES=("SOX2_S1_R1.target.dedup.sorted.bam")
 
 mkdir -p $SOX2_BIGWIG_DIR
 

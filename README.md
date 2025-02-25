@@ -15,4 +15,4 @@ This repository is broken down by the figures each script contributed to.
 
 
 
-"This research was supported in part by the University of Pittsburgh Center for Research Computing​, RRID:SCR_022735, through the resources provided. Specifically, this work used the HTC cluster, which is supported by NIH award number S10OD028483.
+This research was supported in part by the University of Pittsburgh Center for Research Computing​, RRID:SCR_022735, through the resources provided. Specifically, this work used the HTC cluster, which is supported by NIH award number S10OD028483.
