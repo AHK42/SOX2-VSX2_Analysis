@@ -1,4 +1,4 @@
-# SOX2-VSX2 Analysis 
+# A SOX2-VSX2 axis modulates a core cis-regulatory circuitry to safeguard retinal neural competence
 
 This repository is broken down by the figures each script contributed to. 
 
