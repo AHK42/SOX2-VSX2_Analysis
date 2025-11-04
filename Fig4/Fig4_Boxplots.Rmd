@@ -1,200 +1,90 @@
 ---
-title: "SOX2-VSX2_Boxplots"
+title: "Wilcox BoxPlots"
 author: "Abdullah Khan"
-date: "2024-09-25"
+date: "2025-04-01"
 output: html_document
 editor_options: 
   chunk_output_type: console
 ---
 
 ```{r}
-library(DiffBind)
-library(rtracklayer)
-library(pheatmap)
+library(openxlsx)
+library(ggplot2)
 library(ggpubr)
-library(ggsignif)
-library(DESeq2)
-library(RColorBrewer)
-library(reshape2)
-library(BiocParallel)
-BiocParallel::multicoreWorkers()
-library(dplyr)
 library(tidyr)
-library(edgeR)
+library(dplyr)
+library(ggsignif)
+path <- "/bgfs/ialdiri/Boxplots/" 
 ```
 
-Parallel Processing
-
+### Load in excel sheets
 ```{r}
-register(MulticoreParam(workers =24 ,progressbar = T))
+down.graph <- read.xlsx("/bgfs/ialdiri/Shared VSX2-SOX2 transcription targets-Final-for revision.xlsx", 2)
+up.graph <- read.xlsx("/bgfs/ialdiri/Shared VSX2-SOX2 transcription targets-Final-for revision.xlsx", 5)
 ```
-
+### Split df by samples
 ```{r}
-# create sample sheets for all diffbind objects
-# SOX2 ATAC data with peaks from Sox2 C&R Vsx2 ChIP
+down.sox2 <- down.graph[,1:3]
+down.vsx2 <- down.graph[,4:6]
 
-# put pluto peaks back later
-sox2_shared <- data.frame(
-  SampleID = c("WT1", "WT2"),
-  Condition = c("WT", "WT"),
-  Tissue = rep("E14.5 Retina", 2),  
-  Factor = rep("WT", 2),
-  replicate = c(1,2),
-  bamReads = c(
-    "/bgfs/ialdiri/CR-ChIP/Sox2CR/results/02_alignment/bowtie2/target/dedup/SOX2_S1_R1.target.dedup.sorted.bam",
-    "/bgfs/ialdiri/CR-ChIP/Sox2CR/results/02_alignment/bowtie2/target/dedup/SOX2_S3_R1.target.dedup.sorted.bam"
-  ),
-  Peaks = rep("/bgfs/ialdiri/CR-ChIP/Peaks/sox2_vsx2_9k_shared.bed", 2),
-  PeakCaller = rep("bed",2)
-)
-
-sox2_shared <- dba(sampleSheet=sox2_shared)
-sox2_shared <- dba.count(sox2_shared, filter = 1, bParallel = T, summits = T, score = DBA_SCORE_TMM_READS_FULL_CPM)
-
+up.sox2 <- up.graph[,1:3]
+up.vsx2 <- up.graph[,4:6]
 ```
-
+### Change df and names here
 ```{r}
-sox2_unique <- data.frame(
-  SampleID = c("WT1", "WT2"),
-  Condition = c("WT", "WT"),
-  Tissue = rep("E14.5 Retina", 2),  
-  Factor = rep("WT", 2),
-  replicate = c(1,2),
-  bamReads = c(
-    "/bgfs/ialdiri/CR-ChIP/Sox2CR/results/02_alignment/bowtie2/target/dedup/SOX2_S1_R1.target.dedup.sorted.bam",
-    "/bgfs/ialdiri/CR-ChIP/Sox2CR/results/02_alignment/bowtie2/target/dedup/SOX2_S3_R1.target.dedup.sorted.bam"
-  ),
-  Peaks = rep("/bgfs/ialdiri/CR-ChIP/Peaks/sox2_unique.bed", 2),
-  PeakCaller = rep("bed",2)
-)
-
-sox2_unique <- dba(sampleSheet=sox2_unique)
-sox2_unique <- dba.count(sox2_unique, filter = 1, bParallel = T, summits = T, score = DBA_SCORE_TMM_READS_FULL_CPM)
+df <- down.vsx2
+newColnames <- c("Sox2 Unique", "Shared Down-Sox2KO", "Vsx2 Unique")
+plotName <- "Down_Vsx2KO"
+plotTitle <- "Down in Vsx2KO"
 ```
 
+1. Format with params from above 
+2. Convert to long format 
+3. Compute wilcox test and extract pvals
 ```{r}
-sox2_shared_counts <- dba.peakset(sox2_shared, bRetrieve = TRUE, DataType = DBA_DATA_FRAME)
-sox2_shared_avg <- data.frame(SOX2 = rowMeans(sox2_shared_counts[c("WT1", "WT2")]))
-sox2_shared_avg$group <- "Shared"
+colnames(df) <- newColnames
+# convert to long format to plot
+df.long <- df %>%
+  pivot_longer(cols = everything(), names_to = "Group", values_to = "Expression_Level")
 
-sox2_unique_counts <- dba.peakset(sox2_unique, bRetrieve = TRUE, DataType = DBA_DATA_FRAME)
-sox2_unique_avg <- data.frame(SOX2 = rowMeans(sox2_unique_counts[c("WT1", "WT2")]))
-sox2_unique_avg$group <- "SOX2 Only"
-
-combined_df <- rbind(sox2_shared_avg, sox2_unique_avg)
+# Factor to keep order 
+df.long$Group <- factor(df.long$Group, levels = c(newColnames[1], newColnames[2], newColnames[3]), ordered = TRUE)
 
 
-sox2_melted_df <- melt(combined_df, id.vars = "group", variable.name = "Condition", value.name = "Counts")
+wilcox_paired <- compare_means(Expression_Level ~ Group, data = df.long, method = "wilcox.test", paired = FALSE)
+pval <- compare_means(Expression_Level ~ Group, data = df.long, method = "wilcox.test", paired = FALSE)$p.adj
 
-sox2_melted_df$group <- factor(sox2_melted_df$group, levels = c("Shared", "SOX2 Only"))
-
-wt <- wilcox.test(sox2_shared_avg$SOX2, sox2_unique_avg$SOX2)
 ```
 
+### Plot BoxPlot
 ```{r}
-p1 <- ggplot(sox2_melted_df, aes(x = group, y = Counts, fill = Condition)) +
-  geom_boxplot(outlier.shape = NA, notch = T, outliers = F, coef = 0.75, linewidth =1, ) +
-  labs(title = "",
-       x = "",
-       y = "Normalized Counts") +
-  theme_classic(base_size = 20, ) +
-  scale_colour_manual(values = c("black"))+
-  annotate('text', x=1.7, y=2.2, label = "p = 5.661771e-23") +
-  guides(fill="none") +
-  scale_fill_manual(values = "blue1") +
-  theme(axis.text.x = element_text(size = 14)) +
-  stat_compare_means(method = "wilcox.test", 
-                     label = "p.format", 
-                     comparisons = list(c("Shared", "SOX2 Only")),
-                     label.y = 2, 
-                     tip.length = 0.01)
-ggsave("Sox2_CPM_Boxplot.png", plot = p1, width = 4, height = 10, dpi = 1200)
-
+pdf(paste0(path,plotName,".pdf"), width = 4, height = 8)
+ggplot(df.long, aes(x = Group, y = Expression_Level, fill = Group)) + 
+  geom_boxplot(
+                  outlier.shape = NA,
+                  notch = T) + 
+  coord_cartesian(ylim = c(-3.5,1)) +
+  theme_classic() + 
+  xlab("") + 
+  ylab("Expression Level") + 
+  labs(title = paste0(plotTitle, " - Wilcox Ranked Sum Test")) +
+  scale_fill_manual(values = c("red3", "blue3", "green3")) +
+  theme(legend.position = "none") +
+geom_signif(
+    comparisons = list(c(newColnames[1], newColnames[2]),
+                       c(newColnames[1], newColnames[3]),
+                       c(newColnames[2], newColnames[3])),
+    annotations = pval,
+    tip_length = 0.01,
+    y_position = c(0,.5,-.75)
+  )
+dev.off()
 ```
 
 
-```{r}
-# create sample sheets for all diffbind objects
-# SOX2 ATAC data with peaks from Sox2 C&R Vsx2 ChIP
 
-# put pluto peaks back later
-vsx2_shared <- data.frame(
-  SampleID = c("WT1", "WT2"),
-  Condition = c("WT", "WT"),
-  Tissue = rep("E14.5 Retina", 2),  
-  Factor = rep("WT", 2),
-  replicate = c(1,2),
-  bamReads = c(
-    "/bgfs/ialdiri/CR-ChIP/VSX2_Chip-Seq/outDir/bowtie2/mergedLibrary/Vsx2_Sample1.mLb.clN.sorted.bam",
-    "/bgfs/ialdiri/CR-ChIP/VSX2_Chip-Seq/outDir/bowtie2/mergedLibrary/Vsx2_Sample3.mLb.clN.sorted.bam"
-  ),
-  Peaks = rep("/bgfs/ialdiri/CR-ChIP/Peaks/sox2_vsx2_9k_shared.bed", 2),
-  PeakCaller = rep("bed",2)
-)
 
-vsx2_shared <- dba(sampleSheet=vsx2_shared)
-vsx2_shared <- dba.count(vsx2_shared, filter = 1, bParallel = T, summits = T, score = DBA_SCORE_TMM_READS_FULL_CPM)
-```
 
-```{r}
-# create sample sheets for all diffbind objects
-# SOX2 ATAC data with peaks from Sox2 C&R Vsx2 ChIP
-
-# put pluto peaks back later
-vsx2_unique <- data.frame(
-  SampleID = c("WT1", "WT2"),
-  Condition = c("WT1", "WT2"),
-  Tissue = rep("E14.5 Retina", 2),  
-  Factor = rep("WT", 2),
-  replicate = c(1,2),
-  bamReads = c(
-    "/bgfs/ialdiri/CR-ChIP/VSX2_Chip-Seq/outDir/bowtie2/mergedLibrary/Vsx2_Sample1.mLb.clN.sorted.bam",
-    "/bgfs/ialdiri/CR-ChIP/VSX2_Chip-Seq/outDir/bowtie2/mergedLibrary/Vsx2_Sample3.mLb.clN.sorted.bam"
-  ),
-  Peaks = rep("/bgfs/ialdiri/CR-ChIP/Peaks/vsx2_9k_unique.bed", 2),
-  PeakCaller = rep("bed",2)
-)
-
-vsx2_unique <- dba(sampleSheet=vsx2_unique)
-vsx2_unique <- dba.count(vsx2_unique, filter = 1, bParallel = T, summits = T, score = DBA_SCORE_TMM_READS_FULL_CPM)
-```
-
-```{r}
-vsx2_shared_counts <- dba.peakset(vsx2_shared, bRetrieve = TRUE, DataType = DBA_DATA_FRAME)
-vsx2_shared_avg <- data.frame(VSX2 = rowMeans(vsx2_shared_counts[c("WT1", "WT2")]))
-vsx2_shared_avg$group <- "Shared"
-
-vsx2_unique_counts <- dba.peakset(vsx2_unique, bRetrieve = TRUE, DataType = DBA_DATA_FRAME)
-vsx2_unique_avg <- data.frame(VSX2 = rowMeans(vsx2_unique_counts[c("WT1", "WT2")]))
-vsx2_unique_avg$group <- "VSX2 Only"
-
-combined_df <- rbind(vsx2_shared_avg, vsx2_unique_avg)
-
-vsx2_melted_df <- melt(combined_df, id.vars = "group", variable.name = "Condition", value.name = "Counts")
-
-wt <- wilcox.test(vsx2_shared_avg$VSX2, vsx2_unique_avg$VSX2)
-```
-
-```{r}
-p2 <- ggplot(vsx2_melted_df, aes(x = group, y = Counts, fill = Condition)) +
-  geom_boxplot(outlier.shape = NA, notch = T, outliers = F, coef = 0.75, linewidth =1 ) +
-  labs(title = "",
-       x = "",
-       y = "Normalized Counts") +
-  theme_classic(base_size = 20) +
-  scale_colour_manual(values = c("black"))+
-  annotate('text', x=1.7, y=6, label = "p = 7.509969e-20") +
-  guides(fill="none") +
-  scale_fill_manual(values = "blue") +
-  theme(axis.text.x = element_text(size = 14)) +
-  stat_compare_means(method = "wilcox.test", 
-                     label = "p.format", 
-                     comparisons = list(c("Shared", "VSX2 Only")),
-                     label.y = 6.5, 
-                     tip.length = 0.01)
-
-ggsave("VSX2_CPM_Boxplot_New.png", plot = p2, width = 4, height = 10, dpi = 1200)
-```
 
 
 
