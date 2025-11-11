@@ -1,6 +1,6 @@
 # A SOX2-VSX2 axis modulates a core cis-regulatory circuitry to safeguard retinal neural competence
 
-This repository is broken down by the figures generated in the pupblication. 
+This repository is organized by the figures in the publication. 
 
 The sequencing data have been deposited in the NCBI Gene Expression Omnibus
 (GEO) database under accession number [GSE281033](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE281033), with [GSE281030](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE281030) for ATAC-
