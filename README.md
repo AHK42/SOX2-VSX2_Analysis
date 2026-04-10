@@ -1,4 +1,4 @@
-# SOX2-driven enhancer landscape defines the transcriptional architecture of retinogenesis
+# [SOX2-driven enhancer landscape defines the transcriptional architecture of retinogenesis](https://doi.org/10.1242/dev.204986)
 
 This repository is organized by the figures in the publication.
 
